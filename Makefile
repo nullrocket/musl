@@ -19,7 +19,11 @@ syslibdir = /lib
 
 SRC_DIRS = $(addprefix $(srcdir)/,src/* crt ldso $(COMPAT_SRC_DIRS))
 BASE_GLOBS = $(addsuffix /*.c,$(SRC_DIRS))
+ifeq ($(ARCH),wasm32)
+ARCH_GLOBS = $(addsuffix /$(ARCH)/*.c,$(SRC_DIRS))
+else
 ARCH_GLOBS = $(addsuffix /$(ARCH)/*.[csS],$(SRC_DIRS))
+endif
 BASE_SRCS = $(sort $(wildcard $(BASE_GLOBS)))
 ARCH_SRCS = $(sort $(wildcard $(ARCH_GLOBS)))
 BASE_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(BASE_SRCS)))
@@ -66,7 +70,12 @@ CRT_LIBS = $(addprefix lib/,$(notdir $(CRT_OBJS)))
 STATIC_LIBS = lib/libc.a
 SHARED_LIBS = lib/libc.so
 TOOL_LIBS = lib/musl-gcc.specs
+ifeq ($(ARCH),wasm32)
+ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
+else
+SHARED_LIBS = lib/libc.so
 ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
+endif
 ALL_TOOLS = obj/musl-gcc
 
 WRAPCC_GCC = gcc
